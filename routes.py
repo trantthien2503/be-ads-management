@@ -15,8 +15,7 @@ def registerUser():
     user = {
         "email": req.get('email'),
         "password": req.get('password'),
-        "phone": req.get('phone'),
-        "nickname": req.get('nickname'),
+        "phoneNumber": req.get('phoneNumber'),
         "role": req.get('role')
     }
     firestore = FirestoreCollection("users")
