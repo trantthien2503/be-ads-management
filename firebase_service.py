@@ -142,13 +142,17 @@ class FirestoreCollection():
                     "data": False,
                     'message': 'Email đã được đăng ký'
                 }
-            doc_ref = self.collection.document(email).set(data)
+            # Tạo id mới cho user
+            doc_ref = self.collection.document()  
+            id = doc_ref.id
 
-            doc_ref = self.collection.document(email)
-            doc = doc_ref.get()
+            # Thêm id vào data
+            data['id'] = id
 
+            # Lưu dữ liệu
+            doc_ref.set(data)
             response = {
-                "user": doc.to_dict(),
+                "user": data,
                 "message": "Đăng ký thành công"
             }
             return response

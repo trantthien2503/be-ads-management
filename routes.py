@@ -9,9 +9,22 @@ main_bp = Blueprint('main', __name__)
 # Format route /api/${ tên table }/ ${các giao tác}
 
 # Hàm thực hiện đăng kí
+@main_bp.route('/api/update-by-fields', methods=['POST'])
+def updateByFields():
+    req = request.get_json()
+    field = req.get('field')
+    id_update = req.get('id')
+    data_update = req.get('data_update')
+    firestore = FirestoreCollection(field)
+    update = firestore.update_data(id_update, data_update)
+    return jsonify(update)
+
+
+
+# Hàm thực hiện đăng kí
 @main_bp.route('/api/users/register', methods=['POST'])
 def registerUser():
-    req = request.get_json() # Tạo đối tượng Staffinfo từ dữ liệu nhận được
+    req = request.get_json() 
     user = {
         "email": req.get('email'),
         "password": req.get('password'),
@@ -25,7 +38,7 @@ def registerUser():
 # Hàm thực hiện đăng nhập
 @main_bp.route('/api/users/login', methods=['POST'])
 def loginUser():
-    req = request.get_json() # Tạo đối tượng Staffinfo từ dữ liệu nhận được
+    req = request.get_json() # Tạo đối tượng từ dữ liệu nhận được
     user = {
         "email": req.get('email'),
         "password": req.get('password'),
