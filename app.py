@@ -7,6 +7,10 @@ from routes import main_bp
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app, support_credentials=True)
+
+app.config["IMAGE_UPLOAD"] = "/FIDDL/images"
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["PNG", "JPG", "JPEG"]
+app.config["MAX_IMAGE_FILESIZE"] = 1.5 * 1024 * 1024 
 api = Api(app)
 
 if __name__ == "__main__":

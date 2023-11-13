@@ -1,5 +1,5 @@
 import firebase_admin
-from firebase_admin import credentials, db, firestore
+from firebase_admin import credentials, db, firestore, storage
 
 import json
 
@@ -12,7 +12,7 @@ firebaseApp = firebase_admin.initialize_app(
     certificate, {"databaseURL": appsettings['databaseURL']})
 
 db = firestore.client()
-
+storage = firebaseApp.storage('gs://resful-api-38eda.appspot.com')
 
 class FirestoreCollection():
     def __init__(self, collection_name):
@@ -143,7 +143,7 @@ class FirestoreCollection():
                     'message': 'Email đã được đăng ký'
                 }
             # Tạo id mới cho user
-            doc_ref = self.collection.document()  
+            doc_ref = self.collection.document()
             id = doc_ref.id
 
             # Thêm id vào data
@@ -187,3 +187,20 @@ class FirestoreCollection():
 
         except Exception as err:
             return {'message': f'Lỗi: {err}'}
+
+    # Hàm cập nhật ảnh
+    def upload_image(self, file):
+        try:
+            bucket = storage.bucket()
+            blob = bucket.blob("images/" + file.filename)
+            blob.upload_from_filename(file.filename)
+            image_url = blob.public_url
+
+            response = {
+                'message': 'Tải ảnh lên thành công',
+                'image_url': image_url
+            }
+            return response
+
+        except Exception as e:
+            return {'message': f'Lỗi không xác định: {e}'}
