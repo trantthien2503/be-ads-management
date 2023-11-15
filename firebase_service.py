@@ -1,5 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, db, firestore, storage
+from werkzeug.utils import secure_filename
 
 import json
 
@@ -9,10 +10,13 @@ with open('resful-api-38eda-firebase-adminsdk-6u38o-0f93a07228.json', 'r') as js
 certificate = credentials.Certificate(appsettings)
 
 firebaseApp = firebase_admin.initialize_app(
-    certificate, {"databaseURL": appsettings['databaseURL']})
+    certificate, {
+        "databaseURL": appsettings['databaseURL'],
+         'storageBucket': 'resful-api-38eda.appspot.com'
+        })
 
 db = firestore.client()
-storage = firebaseApp.storage('gs://resful-api-38eda.appspot.com')
+bucket = storage.bucket()
 
 class FirestoreCollection():
     def __init__(self, collection_name):
@@ -189,18 +193,22 @@ class FirestoreCollection():
             return {'message': f'Lỗi: {err}'}
 
     # Hàm cập nhật ảnh
-    def upload_image(self, file):
+    def upload_image(self, image_file):
         try:
-            bucket = storage.bucket()
-            blob = bucket.blob("images/" + file.filename)
-            blob.upload_from_filename(file.filename)
-            image_url = blob.public_url
+            filename = secure_filename(image_file.filename)
+            blob = bucket.blob(f"images/{filename}")
+            blob.upload_from_file(image_file)
+           # Make public
+            blob.make_public()
 
-            response = {
-                'message': 'Tải ảnh lên thành công',
-                'image_url': image_url
+            # Lấy URL
+            url = blob.public_url
+
+            return {
+                'message': 'Tải ảnh thành công',
+                'image_url': url
             }
-            return response
 
         except Exception as e:
-            return {'message': f'Lỗi không xác định: {e}'}
+            print(f"Error uploading image: {e}")
+        return None
