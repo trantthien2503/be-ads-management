@@ -1,12 +1,16 @@
 from flask import Blueprint, jsonify, request
 from firebase_service import FirestoreCollection
-
+from mailjet_rest import Client
 import os
+
+import mailtrap as mt
+
+
 # Tạo blueprint với tên là "main"
 main_bp = Blueprint('main', __name__)
 # Định nghĩa route cho blueprint "main"
-
-
+from app import mail
+from flask_mail import Message
 # Hàm thực hiện tạo dữ liệu
 @main_bp.route('/api/get-data-by-fields', methods=['POST'])
 def getByFields():
@@ -92,3 +96,39 @@ def upload_image():
         return upload_image
     else:
         return jsonify({'message': 'No file provided'})
+
+@main_bp.route('/api/send-email',  methods=["POST"])
+def send_email():
+    # Key API của mailjet
+    api_key = '7314f9293e0e2703d07669ba9091e2d5'
+    api_secret = 'e63e842cd88b2660c6eac9629e8d3221'
+    mailjet = Client(auth=(api_key, api_secret), version='v3.1')
+
+    data = request.get_json()
+
+    message = {
+        'Messages': [
+            {
+                "From": {
+                    "Email": data["sender_email"],
+                    "Name": data["sender_name"]
+                },
+                "To": [
+                    {
+                        "Email": data["recipient_email"],
+                        "Name": data["recipient_name"]
+                    }
+                ],
+                "Subject": data["subject"],
+                "TextPart": data["text_content"],
+                "HTMLPart": data["html_content"],
+                "CustomID": data["custom_id"]
+            }
+        ]
+    }
+
+    try:
+        result = mailjet.send.create(data=message)
+        return jsonify(result.json())
+    except Exception as e:
+        return jsonify({'message': 'Failed to send email', 'error': str(e)})
